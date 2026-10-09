@@ -2,7 +2,8 @@ import React from 'react';
 import {AbsoluteFill, Audio, Img, interpolate, Sequence, spring, staticFile, useCurrentFrame, useVideoConfig} from 'remotion';
 import {Botis, DESPLAZAMIENTO_MARCO, Fondo, Subtitulo} from '../tutorial/componentes';
 import {Final} from '../tutorial/escenas';
-import {seg} from '../tutorial/tema';
+import {FPS} from '../tutorial/tema';
+import {seg, VELOCIDAD} from './tiempo';
 import {Antes, Cierre, Intro, Paso1, Paso2, Paso3, Paso4, Paso5, Paso6} from './escenas';
 
 export type LlaveProps = {
@@ -15,7 +16,7 @@ export type LlaveProps = {
 const claves = ['intro', 'antes', 'paso1', 'paso2', 'paso3', 'paso4', 'paso5', 'paso6', 'cierre'] as const;
 type Clave = (typeof claves)[number];
 
-// Duración de cada frase de la locución (medida al cortarla con scripts/cortar-voz.js)
+// Duración de cada frase de la locución original (medida al cortarla con scripts/cortar-voz.js); seg() la ajusta a VELOCIDAD
 const duracionVoz: Record<Clave, number> = {intro: 10.25, antes: 7, paso1: 7.56, paso2: 6.7, paso3: 5.97, paso4: 9.34, paso5: 9.2, paso6: 6.17, cierre: 5.8};
 const RETRASO_VOZ = 0.3;
 
@@ -32,7 +33,7 @@ const secciones = Object.fromEntries(
 	}),
 ) as Record<Clave, {desde: number; dura: number}>;
 const INICIO_FINAL = acumulado;
-export const DURACION_LLAVE = seg(acumulado + DURACION_FINAL);
+export const DURACION_LLAVE = seg(acumulado) + Math.round(DURACION_FINAL * FPS);
 
 const guion: Record<Clave, string> = {
 	intro: '¿Quieres iniciar sesión en tu correo corporativo de forma más rápida y segura? Crea tu llave de acceso en Google Workspace.',
@@ -49,17 +50,17 @@ const guion: Record<Clave, string> = {
 const escenas: Record<Clave, React.FC> = {intro: Intro, antes: Antes, paso1: Paso1, paso2: Paso2, paso3: Paso3, paso4: Paso4, paso5: Paso5, paso6: Paso6, cierre: Cierre};
 
 // Pose(s) y posición de Botis en cada sección
-const IZQUIERDA = {x: 8, y: 600, alto: 440};
+const IZQUIERDA = {x: 0, y: 515, alto: 545};
 const botisPorSeccion: Record<Clave, React.ComponentProps<typeof Botis>> = {
-	intro: {poses: [{pose: '2027/duda', desde: 0}, {pose: '2027/saludando', desde: 5.6}], x: 950, y: 330, alto: 430},
-	antes: {poses: [{pose: '2027/pensando', desde: 0}], ...IZQUIERDA},
+	intro: {poses: [{pose: '2027/duda', desde: 0}, {pose: '2027/saludando', desde: 5.6 / VELOCIDAD}], x: 880, y: 235, alto: 560, suave: true},
+	antes: {poses: [{pose: '2027/pensando', desde: 0}], x: 20, y: 410, alto: 650},
 	paso1: {poses: [{pose: '2027/laptop', desde: 0}], ...IZQUIERDA},
 	paso2: {poses: [{pose: '2027/senalando', desde: 0}], ...IZQUIERDA},
 	paso3: {poses: [{pose: '2027/idea', desde: 0}], ...IZQUIERDA},
 	paso4: {poses: [{pose: '2027/duda', desde: 0}], ...IZQUIERDA},
 	paso5: {poses: [{pose: '2027/entusiasmado', desde: 0}], ...IZQUIERDA},
 	paso6: {poses: [{pose: '2027/tranquilo', desde: 0}], ...IZQUIERDA},
-	cierre: {poses: [{pose: '2027/victoria', desde: 0}], x: 1520, y: 390, alto: 400},
+	cierre: {poses: [{pose: '2027/victoria', desde: 0}], x: 1460, y: 320, alto: 520},
 };
 
 // Tramos en los que suena la voz, para bajar la música debajo de ella
@@ -91,18 +92,18 @@ export const LlaveDeAcceso: React.FC<LlaveProps> = ({botis, volumenMusica, subti
 			const {desde, dura} = secciones[k];
 			const portada = k === 'intro' || k === 'antes' || k === 'cierre';
 			return (
-				<Sequence key={k} name={k} from={seg(desde)} durationInFrames={seg(dura)}>
+				<Sequence key={k} name={k} from={seg(desde)} durationInFrames={seg(desde + dura) - seg(desde)}>
 					<Escena />
 					<Logo desvanecer={k === 'cierre'} />
 					{botis ? <Botis {...botisPorSeccion[k]} /> : null}
 					{subtitulos ? <Subtitulo texto={guion[k]} desplazamiento={portada ? 0 : DESPLAZAMIENTO_MARCO} /> : null}
 					<Sequence from={seg(RETRASO_VOZ)} layout="none">
-						<Audio src={staticFile(`llave/voz/${k}.wav`)} />
+						<Audio src={staticFile(`llave/voz-rapida/${k}.wav`)} />
 					</Sequence>
 				</Sequence>
 			);
 		})}
-		<Sequence name="final" from={seg(INICIO_FINAL)} durationInFrames={seg(DURACION_FINAL)}>
+		<Sequence name="final" from={seg(INICIO_FINAL)} durationInFrames={Math.round(DURACION_FINAL * FPS)}>
 			<Final />
 		</Sequence>
 		{volumenMusica > 0 ? <Audio src={staticFile('llave/musica.wav')} volume={(f) => volumenConVoz(f, volumenMusica)} /> : null}

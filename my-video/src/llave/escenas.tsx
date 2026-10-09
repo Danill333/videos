@@ -1,7 +1,8 @@
 import React from 'react';
-import {AbsoluteFill, interpolate, OffthreadVideo, Sequence, spring, staticFile, useCurrentFrame, useVideoConfig} from 'remotion';
+import {AbsoluteFill, Img, interpolate, OffthreadVideo, Sequence, spring, staticFile, useCurrentFrame, useVideoConfig} from 'remotion';
 import {Camara, Marco, Paso, Rect, Resaltado, useToma} from '../tutorial/componentes';
-import {colores, fontFamily, marca, seg} from '../tutorial/tema';
+import {colores, FPS, fontFamily, marca} from '../tutorial/tema';
+import {seg, VELOCIDAD} from './tiempo';
 
 const clamp = {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'} as const;
 const TOTAL_PASOS = 6;
@@ -31,8 +32,8 @@ const Cortes: React.FC<{grab: Grab; cortes: Corte[]}> = ({grab, cortes}) => {
 						<AbsoluteFill>
 							<OffthreadVideo
 								src={staticFile(GRABACIONES[grab].src)}
-								trimBefore={seg(a)}
-								playbackRate={v}
+								trimBefore={Math.round(a * FPS)}
+								playbackRate={v * VELOCIDAD}
 								muted
 								style={{width: '100%', height: '100%'}}
 							/>
@@ -133,6 +134,8 @@ export const Intro: React.FC = () => {
 	const tachado = interpolate(frame, [60, 80], [0, 1], clamp);
 	const llave = spring({frame: frame - 85, fps, config: {damping: 10}});
 	const sello = spring({frame: frame - 110, fps, config: {damping: 9, mass: 0.6}});
+	// Aparece cuando la voz dice "Google Workspace"
+	const workspace = spring({frame: frame - seg(8.9), fps, config: {damping: 12}});
 	return (
 		<AbsoluteFill>
 			<div style={{position: 'absolute', left: 160, top: 300, fontFamily, color: colores.azulOscuro}}>
@@ -146,6 +149,26 @@ export const Intro: React.FC = () => {
 				</div>
 				<div style={{fontSize: 38, fontWeight: 300, marginTop: 24, opacity: sub, transform: `translateY(${(1 - sub) * 20}px)`}}>
 					Inicia sesión más rápido y seguro.
+				</div>
+				<div
+					style={{
+						display: 'inline-flex',
+						alignItems: 'center',
+						gap: 16,
+						marginTop: 34,
+						padding: '14px 26px 14px 16px',
+						borderRadius: 999,
+						background: 'white',
+						boxShadow: '0 14px 30px rgba(4, 44, 108, 0.14)',
+						fontSize: 30,
+						fontWeight: 500,
+						opacity: Math.min(1, workspace * 1.4),
+						transform: `translateY(${(1 - workspace) * 24}px) scale(${0.8 + workspace * 0.2})`,
+						transformOrigin: '0% 50%',
+					}}
+				>
+					<Img src={staticFile('llave/google-workspace.png')} style={{width: 52, height: 52}} />
+					Google Workspace
 				</div>
 			</div>
 			{/* Tarjeta: de contraseña a llave de acceso */}
@@ -234,9 +257,7 @@ export const Antes: React.FC = () => {
 			>
 				{/* Celular con correo */}
 				<div style={{position: 'relative', width: 170, height: 300, borderRadius: 32, border: `10px solid ${colores.azulOscuro}`, background: marca.blancoNube, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-					<div style={{width: 92, height: 66, borderRadius: 10, background: colores.azul, position: 'relative', overflow: 'hidden'}}>
-						<div style={{position: 'absolute', left: -6, top: -40, width: 104, height: 80, borderBottom: '6px solid white', transform: 'rotate(0deg)', borderRadius: '0 0 50% 50%'}} />
-					</div>
+					<Img src={staticFile('marca/isotipo-interseguro.png')} style={{width: 92, height: 92 * (190 / 187)}} />
 					<div
 						style={{
 							position: 'absolute',

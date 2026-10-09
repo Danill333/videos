@@ -318,7 +318,9 @@ export const Botis: React.FC<{
 	x: number;
 	y: number;
 	alto: number;
-}> = ({poses, x, y, alto}) => {
+	// Cambio de pose con un saltito y fundido largo, en lugar del cambio rápido con rebote
+	suave?: boolean;
+}> = ({poses, x, y, alto, suave = false}) => {
 	const frame = useCurrentFrame();
 	const {fps, durationInFrames} = useVideoConfig();
 	const ancho = (alto * RECORTE.w) / RECORTE.h;
@@ -329,6 +331,14 @@ export const Botis: React.FC<{
 	const flotar = Math.sin(frame / 14) * 8;
 	const respirar = 1 + Math.sin(frame / 20) * 0.012;
 	const balanceo = Math.sin(frame / 28) * 1.8;
+	// Saltito al cambiar de pose (modo suave): sube y baja en SALTO fotogramas
+	const SALTO = 16;
+	const salto = suave
+		? poses.slice(1).reduce((acc, {desde}) => {
+				const t = (frame - seg(desde) + SALTO / 2) / SALTO;
+				return t > 0 && t < 1 ? acc + Math.sin(t * Math.PI) : acc;
+			}, 0)
+		: 0;
 
 	return (
 		<div
@@ -341,17 +351,19 @@ export const Botis: React.FC<{
 				opacity: Math.min(1, entrada * 1.5) * salida,
 				filter: 'drop-shadow(0 8px 14px rgba(4, 44, 108, 0.22)) drop-shadow(0 0 1.5px rgba(4, 44, 108, 0.35))',
 				transformOrigin: '50% 100%',
-				transform: `translateY(${(1 - entrada) * 120 + flotar}px) rotate(${balanceo}deg) scale(${respirar * (0.85 + entrada * 0.15)})`,
+				transform: `translateY(${(1 - entrada) * 120 + flotar - salto * 26}px) rotate(${balanceo}deg) scale(${respirar * (0.85 + entrada * 0.15) * (1 + salto * 0.03)})`,
 			}}
 		>
 			{poses.map(({pose, desde}, i) => {
 				const inicio = seg(desde);
 				const fin = i < poses.length - 1 ? seg(poses[i + 1].desde) : Infinity;
-				const aparece = i === 0 ? 1 : interpolate(frame, [inicio, inicio + 6], [0, 1], clamp);
-				const desaparece = fin === Infinity ? 1 : interpolate(frame, [fin, fin + 6], [1, 0], clamp);
+				const fundido = suave ? 10 : 6;
+				const desfase = suave ? fundido / 2 : 0;
+				const aparece = i === 0 ? 1 : interpolate(frame, [inicio - desfase, inicio - desfase + fundido], [0, 1], clamp);
+				const desaparece = fin === Infinity ? 1 : interpolate(frame, [fin - desfase, fin - desfase + fundido], [1, 0], clamp);
 				const visible = aparece * desaparece;
 				if (visible <= 0) return null;
-				const pop = i === 0 ? 1 : 1 + 0.06 * Math.sin(Math.min(1, (frame - inicio) / 10) * Math.PI);
+				const pop = i === 0 || suave ? 1 : 1 + 0.06 * Math.sin(Math.min(1, (frame - inicio) / 10) * Math.PI);
 				return (
 					<div key={pose + desde} style={{position: 'absolute', inset: 0, overflow: 'hidden', opacity: visible, transform: `scale(${pop})`, transformOrigin: '50% 100%'}}>
 						<Img
