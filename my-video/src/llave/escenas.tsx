@@ -1,6 +1,6 @@
 import React from 'react';
 import {AbsoluteFill, Img, interpolate, OffthreadVideo, Sequence, spring, staticFile, useCurrentFrame, useVideoConfig} from 'remotion';
-import {Camara, Marco, Paso, Rect, Resaltado, useToma} from '../tutorial/componentes';
+import {Camara, Marco, Paso, Rect, Resaltado, TamanoMarco, useToma} from '../tutorial/componentes';
 import {colores, FPS, fontFamily, marca} from '../tutorial/tema';
 import {seg, VELOCIDAD} from './tiempo';
 
@@ -8,18 +8,22 @@ const clamp = {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'} as const;
 const TOTAL_PASOS = 6;
 
 /* ============ Grabaciones (public/llave) ============ */
-const GRABACIONES = {
+export const GRABACIONES = {
 	webCrear: {src: 'llave/web-crear.mp4', aspecto: 1920 / 1048},
 	webLogin: {src: 'llave/web-login.mp4', aspecto: 1920 / 1124},
 	celCrear: {src: 'llave/cel-crear.mp4', aspecto: 828 / 1792},
 	celLogin: {src: 'llave/cel-login.mp4', aspecto: 828 / 1792},
+	// Video 2: llave creada desde el celular (public/llave-celular)
+	celLink: {src: 'llave-celular/cel-link.mp4', aspecto: 828 / 1792},
+	webProbar: {src: 'llave-celular/web-probar.mp4', aspecto: 1920 / 1048},
+	celQr: {src: 'llave-celular/cel-qr.mp4', aspecto: 828 / 1792},
 };
-type Grab = keyof typeof GRABACIONES;
+export type Grab = keyof typeof GRABACIONES;
 
 // Cada corte: [segundo inicial, segundo final, velocidad] de la grabación original
-type Corte = [number, number, number];
+export type Corte = [number, number, number];
 
-const Cortes: React.FC<{grab: Grab; cortes: Corte[]}> = ({grab, cortes}) => {
+export const Cortes: React.FC<{grab: Grab; cortes: Corte[]}> = ({grab, cortes}) => {
 	let inicio = 0;
 	return (
 		<>
@@ -46,7 +50,7 @@ const Cortes: React.FC<{grab: Grab; cortes: Corte[]}> = ({grab, cortes}) => {
 };
 
 // Momento (en segundos de la escena) en que ocurre un segundo de la grabación original
-const enEscena = (cortes: Corte[], t: number) => {
+export const enEscena = (cortes: Corte[], t: number) => {
 	let s = 0;
 	for (const [a, b, v] of cortes) {
 		if (t <= b) return s + Math.max(0, t - a) / v;
@@ -70,7 +74,7 @@ const R: Record<string, Rect> = {
 };
 
 /* ============ Celular: grabación vertical dentro de un teléfono ============ */
-const Telefono: React.FC<{grab: Grab; cortes: Corte[]}> = ({grab, cortes}) => {
+export const Telefono: React.FC<{grab: Grab; cortes: Corte[]; children?: React.ReactNode}> = ({grab, cortes, children}) => {
 	const frame = useCurrentFrame();
 	const {fps} = useVideoConfig();
 	const entrada = spring({frame, fps, config: {damping: 18}});
@@ -96,6 +100,8 @@ const Telefono: React.FC<{grab: Grab; cortes: Corte[]}> = ({grab, cortes}) => {
 			>
 				<div style={{position: 'absolute', left: borde, top: borde, width: ancho, height: alto, borderRadius: 52, overflow: 'hidden', background: '#000'}}>
 					<Cortes grab={grab} cortes={cortes} />
+					{/* Resaltados medidos sobre la pantalla del celular */}
+					<TamanoMarco.Provider value={{w: ancho, h: alto}}>{children}</TamanoMarco.Provider>
 				</div>
 			</div>
 			<div
@@ -125,7 +131,7 @@ const Telefono: React.FC<{grab: Grab; cortes: Corte[]}> = ({grab, cortes}) => {
 };
 
 /* ============ INTRO ============ */
-export const Intro: React.FC = () => {
+export const Intro: React.FC<{subtitulo?: string; workspaceDesde?: number}> = ({subtitulo = 'Inicia sesión más rápido y seguro.', workspaceDesde = 8.9}) => {
 	const frame = useCurrentFrame();
 	const {fps} = useVideoConfig();
 	const titulo = spring({frame: frame - 5, fps, config: {damping: 16}});
@@ -135,7 +141,7 @@ export const Intro: React.FC = () => {
 	const llave = spring({frame: frame - 85, fps, config: {damping: 10}});
 	const sello = spring({frame: frame - 110, fps, config: {damping: 9, mass: 0.6}});
 	// Aparece cuando la voz dice "Google Workspace"
-	const workspace = spring({frame: frame - seg(8.9), fps, config: {damping: 12}});
+	const workspace = spring({frame: frame - seg(workspaceDesde), fps, config: {damping: 12}});
 	return (
 		<AbsoluteFill>
 			<div style={{position: 'absolute', left: 160, top: 300, fontFamily, color: colores.azulOscuro}}>
@@ -148,7 +154,7 @@ export const Intro: React.FC = () => {
 					de acceso
 				</div>
 				<div style={{fontSize: 38, fontWeight: 300, marginTop: 24, opacity: sub, transform: `translateY(${(1 - sub) * 20}px)`}}>
-					Inicia sesión más rápido y seguro.
+					{subtitulo}
 				</div>
 				<div
 					style={{

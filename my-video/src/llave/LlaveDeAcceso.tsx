@@ -76,7 +76,7 @@ const volumenConVoz = (frame: number, base: number) => {
 	return base * (1 - 0.55 * cercania);
 };
 
-const Logo: React.FC<{desvanecer: boolean}> = ({desvanecer}) => {
+export const Logo: React.FC<{desvanecer: boolean}> = ({desvanecer}) => {
 	const frame = useCurrentFrame();
 	const {fps, durationInFrames} = useVideoConfig();
 	const salida = desvanecer ? interpolate(frame, [durationInFrames - 12, durationInFrames], [1, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'}) : 1;

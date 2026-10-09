@@ -192,7 +192,7 @@ export const Resaltado: React.FC<{
 	desde: number;
 	hasta: number;
 	etiqueta?: string;
-	lado?: 'derecha' | 'izquierda' | 'abajo';
+	lado?: 'derecha' | 'izquierda' | 'abajo' | 'arriba';
 }> = ({rect, desde, hasta, etiqueta, lado = 'derecha'}) => {
 	const frame = useCurrentFrame();
 	const {fps} = useVideoConfig();
@@ -208,7 +208,9 @@ export const Resaltado: React.FC<{
 			? {left: '100%', top: '50%', marginLeft: 18, transform: 'translateY(-50%)'}
 			: lado === 'izquierda'
 				? {right: '100%', top: '50%', marginRight: 18, transform: 'translateY(-50%)'}
-				: {left: '50%', top: '100%', marginTop: 14, transform: 'translateX(-50%)'};
+				: lado === 'arriba'
+					? {left: '50%', bottom: '100%', marginBottom: 14, transform: 'translateX(-50%)'}
+					: {left: '50%', top: '100%', marginTop: 14, transform: 'translateX(-50%)'};
 	return (
 		<div
 			style={{
