@@ -1,6 +1,6 @@
 import React from 'react';
 import {AbsoluteFill, Audio, Img, interpolate, Sequence, spring, staticFile, useCurrentFrame, useVideoConfig} from 'remotion';
-import {Botis, DESPLAZAMIENTO_MARCO, Fondo, PoseBotis, Subtitulo} from '../tutorial/componentes';
+import {Botis, DESPLAZAMIENTO_MARCO, Fondo, Subtitulo} from '../tutorial/componentes';
 import {Final} from '../tutorial/escenas';
 import {seg} from '../tutorial/tema';
 import {Antes, Cierre, Intro, Paso1, Paso2, Paso3, Paso4, Paso5, Paso6} from './escenas';
@@ -50,16 +50,16 @@ const escenas: Record<Clave, React.FC> = {intro: Intro, antes: Antes, paso1: Pas
 
 // Pose(s) y posición de Botis en cada sección
 const IZQUIERDA = {x: 8, y: 600, alto: 440};
-const botisPorSeccion: Record<Clave, {poses: {pose: PoseBotis; desde: number}[]; x: number; y: number; alto: number}> = {
-	intro: {poses: [{pose: 'duda', desde: 0}, {pose: 'saludando', desde: 5.6}], x: 950, y: 330, alto: 430},
-	antes: {poses: [{pose: 'senalando', desde: 0}], ...IZQUIERDA},
-	paso1: {poses: [{pose: 'senalando', desde: 0}], ...IZQUIERDA},
-	paso2: {poses: [{pose: 'senalando', desde: 0}], ...IZQUIERDA},
-	paso3: {poses: [{pose: 'pensando', desde: 0}], ...IZQUIERDA},
-	paso4: {poses: [{pose: 'senalando', desde: 0}], ...IZQUIERDA},
-	paso5: {poses: [{pose: 'pensando', desde: 0}], ...IZQUIERDA},
-	paso6: {poses: [{pose: 'senalando', desde: 0}], ...IZQUIERDA},
-	cierre: {poses: [{pose: 'celebrando', desde: 0}], x: 1520, y: 390, alto: 400},
+const botisPorSeccion: Record<Clave, React.ComponentProps<typeof Botis>> = {
+	intro: {poses: [{pose: '2027/duda', desde: 0}, {pose: '2027/saludando', desde: 5.6}], x: 950, y: 330, alto: 430},
+	antes: {poses: [{pose: '2027/pensando', desde: 0}], ...IZQUIERDA},
+	paso1: {poses: [{pose: '2027/laptop', desde: 0}], ...IZQUIERDA},
+	paso2: {poses: [{pose: '2027/senalando', desde: 0}], ...IZQUIERDA},
+	paso3: {poses: [{pose: '2027/idea', desde: 0}], ...IZQUIERDA},
+	paso4: {poses: [{pose: '2027/duda', desde: 0}], ...IZQUIERDA},
+	paso5: {poses: [{pose: '2027/entusiasmado', desde: 0}], ...IZQUIERDA},
+	paso6: {poses: [{pose: '2027/tranquilo', desde: 0}], ...IZQUIERDA},
+	cierre: {poses: [{pose: '2027/victoria', desde: 0}], x: 1520, y: 390, alto: 400},
 };
 
 // Tramos en los que suena la voz, para bajar la música debajo de ella

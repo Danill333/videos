@@ -307,12 +307,14 @@ export const Grabacion: React.FC<{desdeSegundo: number; velocidad?: number}> = (
 // Nunca se modifica el dibujo: sin colores, espejos ni elementos añadidos.
 // Solo lleva una sombra suave alrededor para que no se pierda sobre fondos blancos.
 export type PoseBotis = 'saludando' | 'senalando' | 'pensando' | 'duda' | 'celebrando';
+// Poses de Botis 2027 (public/botis/2027), ya encuadradas igual que las anteriores con scripts/preparar-botis-2027.py
+export type PoseBotis2027 = 'duda' | 'saludando' | 'laptop' | 'senalando' | 'idea' | 'pensando' | 'entusiasmado' | 'tranquilo' | 'victoria';
 
 // Recorte de cada PNG (lienzo de 2000×2000) alrededor del personaje
 const RECORTE = {x: 580, y: 480, w: 800, h: 1000};
 
 export const Botis: React.FC<{
-	poses: {pose: PoseBotis; desde: number}[]; // desde: segundo de la escena en que aparece cada pose
+	poses: {pose: PoseBotis | `2027/${PoseBotis2027}`; desde: number}[]; // desde: segundo de la escena en que aparece cada pose
 	x: number;
 	y: number;
 	alto: number;
