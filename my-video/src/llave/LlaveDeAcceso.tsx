@@ -73,7 +73,9 @@ const volumenConVoz = (frame: number, base: number) => {
 	const cercania = Math.max(
 		...tramosVoz.map(([a, b]) => interpolate(frame, [a - rampa, a, b, b + rampa], [0, 1, 1, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'})),
 	);
-	return base * (1 - 0.55 * cercania);
+	// la música se desvanece en los últimos segundos en lugar de cortarse en seco
+	const desvanecer = interpolate(frame, [DURACION_LLAVE - seg(3), DURACION_LLAVE - 3], [1, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
+	return base * (1 - 0.55 * cercania) * desvanecer;
 };
 
 export const Logo: React.FC<{desvanecer: boolean}> = ({desvanecer}) => {

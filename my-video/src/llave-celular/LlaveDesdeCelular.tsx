@@ -20,11 +20,11 @@ const claves = ['intro', 'paso1', 'paso2', 'paso3', 'paso4', 'paso5', 'transicio
 type Clave = (typeof claves)[number];
 
 // Duración de cada frase de la locución limpia (public/llave-celular/voz); seg() la ajusta a VELOCIDAD
-const duracionVoz: Record<Clave, number> = {intro: 6.87, paso1: 3.41, paso2: 2.09, paso3: 4.41, paso4: 2.89, paso5: 7.03, transicion: 3.4, paso6: 6.07, paso7: 7.69, paso8: 7.37, paso9: 11.35, cierre: 5.83};
+const duracionVoz: Record<Clave, number> = {intro: 8.23, paso1: 3.41, paso2: 2.09, paso3: 4.41, paso4: 2.89, paso5: 7.03, transicion: 3.4, paso6: 6.07, paso7: 7.69, paso8: 7.37, paso9: 11.35, cierre: 5.83};
 const RETRASO_VOZ = 0.3;
 
 // Duración de cada escena (segundos), ajustada a la voz y a los cortes de las grabaciones
-const duraciones: Record<Clave, number> = {intro: 8.2, paso1: 4.8, paso2: 3.6, paso3: 6.2, paso4: 4.1, paso5: 8.2, transicion: 4.4, paso6: 7.8, paso7: 9.0, paso8: 8.4, paso9: 12.9, cierre: 6.8};
+const duraciones: Record<Clave, number> = {intro: 9.4, paso1: 4.8, paso2: 3.6, paso3: 6.2, paso4: 4.1, paso5: 8.2, transicion: 4.4, paso6: 7.8, paso7: 9.0, paso8: 8.4, paso9: 12.9, cierre: 6.8};
 const DURACION_FINAL = 2.5;
 
 let acumulado = 0;
@@ -39,7 +39,7 @@ const INICIO_FINAL = acumulado;
 export const DURACION_LLAVE_CELULAR = seg(acumulado) + Math.round(DURACION_FINAL * FPS);
 
 const guion: Record<Clave, string> = {
-	intro: '¿Recibiste el link para crear tu llave de acceso? Créala en un minuto desde tu celular.',
+	intro: '¿Recibiste el link para crear tu llave de acceso? Créala en un minuto desde tu celular en **Google Workspace**.',
 	paso1: 'Abre en tu celular el link que te enviamos por WhatsApp.',
 	paso2: 'Toca **“Crear una llave de acceso”**.',
 	paso3: 'Ingresa la contraseña de tu correo corporativo y toca **“Siguiente”**.',
@@ -53,7 +53,8 @@ const guion: Record<Clave, string> = {
 	cierre: '¡Listo! Ya puedes iniciar sesión sin contraseña, de forma rápida y segura.',
 };
 
-const Intro2: React.FC = () => <Intro subtitulo="Desde tu celular, en un minuto." workspaceDesde={2.5} />;
+// "en Google Workspace" se tomó de la locución del video 1 y se unió al final de la frase
+const Intro2: React.FC = () => <Intro subtitulo="Desde tu celular, en un minuto." workspaceDesde={7.1} />;
 const escenas: Record<Clave, React.FC> = {intro: Intro2, paso1: Paso1, paso2: Paso2, paso3: Paso3, paso4: Paso4, paso5: Paso5, transicion: Transicion, paso6: Paso6, paso7: Paso7, paso8: Paso8, paso9: Paso9, cierre: Cierre};
 
 // Pose(s) y posición de Botis en cada sección
@@ -85,7 +86,9 @@ const volumenConVoz = (frame: number, base: number) => {
 	const cercania = Math.max(
 		...tramosVoz.map(([a, b]) => interpolate(frame, [a - rampa, a, b, b + rampa], [0, 1, 1, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'})),
 	);
-	return base * (1 - 0.55 * cercania);
+	// la música se desvanece en los últimos segundos en lugar de cortarse en seco
+	const desvanecer = interpolate(frame, [DURACION_LLAVE_CELULAR - seg(3), DURACION_LLAVE_CELULAR - 3], [1, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
+	return base * (1 - 0.55 * cercania) * desvanecer;
 };
 
 export const LlaveDesdeCelular: React.FC<LlaveCelularProps> = ({botis, volumenMusica, subtitulos}) => (
